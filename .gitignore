@@ -1,0 +1,24 @@
+# —— 大文件 / 数据（git 不放，走 PFS 挂载）——
+checkpoints/
+*.pt
+*.pth
+*.safetensors
+
+# 运行时软链的数据集目录（PFS 挂载后由脚本自动生成）
+data/yam/
+
+# —— Python ——
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# —— 运行产物 ——
+finetune.jsonl
+*.log
+logs/
+
+# —— 环境 / 密钥 ——
+.env
+.venv/
+venv/
