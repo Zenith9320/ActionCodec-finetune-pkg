@@ -23,13 +23,28 @@ ActionCodec-finetune-pkg/
 │   ├── mcap_to_lerobot.py        # 转换脚本（流式写盘，防 OOM）
 │   └── tasks_yam.json            # task id → 指令 映射（下游 VLA 前需填真实指令）
 ├── checkpoints/
-│   └── action_tokenizer.pt       # 预训练初始权重（507MB，--init-ckpt）
+│   └── action_tokenizer.pt       # 预训练初始权重（507MB，--init-ckpt，git 不打包）
 ├── data/stats/yam_stats.json     # YAM 动作 z-score 统计量（缺失时自动重算）
 ├── pyproject.toml                # 依赖清单（环境重建参考）
+├── download_ckpt.sh              # 下载预训练码本 action_tokenizer.pt（约 484MB）
 ├── convert_data.sh               # 原始 MCAP → data/yam/*_lerobot（微调前先跑）
 ├── run_finetune.sh               # ★ 微调入口（含训练后评估）
 └── run_eval.sh                   # 评估入口（基线对照 / 微调后验收）
 ```
+
+---
+
+## 预训练权重
+
+`checkpoints/action_tokenizer.pt` 是预训练 ActionCodec 码本，**git 不打包**（`.gitignore`
+忽略 `checkpoints/` 与 `*.pt`），需从 Hugging Face 单独下载：
+
+```bash
+bash download_ckpt.sh    # 只下 action_tokenizer.pt 一个文件（约 484MB）
+```
+
+来源是官方 `OpenGalaxea/G05` 仓库（`action_tokenizer.pt` 在根目录）。脚本默认走国内
+镜像 `hf-mirror.com`，海外环境用 `HF_ENDPOINT= bash download_ckpt.sh` 切回官方源。
 
 ---
 
@@ -65,13 +80,19 @@ RAW_DATA_ROOT=/mnt/workspace/handzero-share/DATASET/TeleopData/YAM bash convert_
 
 ## 快速开始
 
-### 0) 准备数据（首次）
+### 0) 下载预训练码本（首次）
+
+```bash
+bash download_ckpt.sh    # checkpoints/action_tokenizer.pt（约 484MB）
+```
+
+### 1) 准备数据（首次）
 
 ```bash
 RAW_DATA_ROOT=/mnt/workspace/handzero-share/DATASET/TeleopData/YAM bash convert_data.sh
 ```
 
-### 1) 微调
+### 2) 微调
 
 ```bash
 bash run_finetune.sh
@@ -86,7 +107,7 @@ bash run_finetune.sh
 
 训练每 epoch 结束时自动评估，结束后再跑一次完整评估，输出逐键 RMSE + 码本利用率。
 
-### 2) 评估（基线对照 / 验收）
+### 3) 评估（基线对照 / 验收）
 
 ```bash
 bash run_eval.sh                                          # 预训练基线（微调前）
