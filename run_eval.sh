@@ -14,14 +14,7 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_ROOT"
 
-# 数据集软链（与 run_finetune.sh 一致）
-DATA_ROOT="${YAM_DATA_ROOT:-/mnt/pfs/yam_data}"
-mkdir -p data/yam
-if [ -d "$DATA_ROOT/TASK-YAM-0001_lerobot" ] && [ ! -e "data/yam/TASK-YAM-0001_lerobot" ]; then
-  ln -s "$DATA_ROOT/TASK-YAM-0001_lerobot" "data/yam/TASK-YAM-0001_lerobot"
-  echo "[data] 已软链: $DATA_ROOT/TASK-YAM-0001_lerobot -> data/yam/TASK-YAM-0001_lerobot"
-fi
-
+# 数据集已由 convert_data.sh 转换到 data/yam/，此处无需软链
 export PYTHONPATH="$PROJECT_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
 
 CKPT="${1:-checkpoints/action_tokenizer.pt}"

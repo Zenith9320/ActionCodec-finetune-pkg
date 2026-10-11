@@ -81,4 +81,12 @@ embodiment_datasets:
     - weight: 1.0
       dataset_dirs:
       - data/yam/TASK-YAM-0001_lerobot
-      # 其余任务转换完成后在此追加
+      - data/yam/TASK-YAM-0002_lerobot
+      - data/yam/TASK-YAM-0004_lerobot
+      - data/yam/TASK-YAM-0006_lerobot
+      - data/yam/TASK-YAM-0007_lerobot
+      - data/yam/TASK-YAM-0008_lerobot
+      - data/yam/TASK-YAM-0010_lerobot
+      - data/yam/TASK-YAM-0013_lerobot
+      - data/yam/TASK-YAM-0014_lerobot
+      - data/yam/TASK-YAM-0015_lerobot

@@ -15,14 +15,18 @@ ActionCodec-finetune-pkg/
 ├── src/                          # g05 源码包（微调 + 数据管线）
 ├── configs/                      # hydra 配置（task/yam.yaml 等 34 个文件）
 │   ├── task/yam.yaml             # ← YAM 任务配置（含码本稳定性超参，见下）
-│   ├── data/yam.yaml             # ← 数据集定义，指向 data/yam/TASK-YAM-0001_lerobot
+│   ├── data/yam.yaml             # ← 数据集定义，列出 10 个 data/yam/TASK-YAM-*_lerobot
 │   ├── data/parts_meta/r1lite.yaml
 │   └── tokenizer/actioncodec.yaml
 ├── scripts/train_tokenizer.py    # 微调/评估脚本
+├── tools/yam/                    # 原始 MCAP → LeRobot 转换
+│   ├── mcap_to_lerobot.py        # 转换脚本（流式写盘，防 OOM）
+│   └── tasks_yam.json            # task id → 指令 映射（下游 VLA 前需填真实指令）
 ├── checkpoints/
 │   └── action_tokenizer.pt       # 预训练初始权重（507MB，--init-ckpt）
-├── data/stats/yam_stats.json     # YAM 动作 z-score 统计量（datastatics_path）
+├── data/stats/yam_stats.json     # YAM 动作 z-score 统计量（缺失时自动重算）
 ├── pyproject.toml                # 依赖清单（环境重建参考）
+├── convert_data.sh               # 原始 MCAP → data/yam/*_lerobot（微调前先跑）
 ├── run_finetune.sh               # ★ 微调入口（含训练后评估）
 └── run_eval.sh                   # 评估入口（基线对照 / 微调后验收）
 ```
@@ -31,21 +35,22 @@ ActionCodec-finetune-pkg/
 
 ## 数据集
 
-数据集**不打包**，需自行准备 LeRobot v3.0 数据集目录 `TASK-YAM-0001_lerobot`，
-放到 `data/yam/` 下，或用 `YAM_DATA_ROOT` 指向其父目录（脚本会自动软链）：
+平台上的原始数据是 **MCAP**（`TASK-YAM-XXXX/mcap/success/*.mcap`），微调读取的是
+转换后的 **LeRobot v3.0**（`TASK-YAM-XXXX_lerobot/`）。二者不能直接互用，需先转换。
 
-```
-data/yam/
-└── TASK-YAM-0001_lerobot/        # LeRobot v3.0 数据集
-    ├── meta/
-    ├── data/
-    └── videos/
-```
+流程：**原始 MCAP →（convert_data.sh）→ LeRobot `_lerobot` →（run_finetune.sh）微调**
 
 ```bash
-export YAM_DATA_ROOT=/path/to/your/data    # 指向包含 TASK-YAM-0001_lerobot 的父目录
-bash run_finetune.sh
+# 在算力平台上（原始数据已通过 PFS 挂载，直接指过去转，无需拷贝）：
+RAW_DATA_ROOT=/mnt/workspace/handzero-share/DATASET/TeleopData/YAM bash convert_data.sh
+# 产物：data/yam/TASK-YAM-{0001,0002,0004,0006,0007,0008,0010,0013,0014,0015}_lerobot/
 ```
+
+若想把原始数据先拷到本地再转，把 `RAW_DATA_ROOT` 指向本地目录即可。
+转换后会删除旧的 `data/stats/yam_stats.json`，微调启动时自动遍历全量数据重算统计量。
+
+> 说明：`tools/yam/tasks_yam.json` 里除 `TASK-YAM-0001` 外的指令是占位符（task id 本身）。
+> 码本微调（自监督重建）不看指令，占位即可；但后续 VLA 全模型微调前需换成真实自然语言指令。
 
 ---
 
@@ -59,6 +64,12 @@ bash run_finetune.sh
 ---
 
 ## 快速开始
+
+### 0) 准备数据（首次）
+
+```bash
+RAW_DATA_ROOT=/mnt/workspace/handzero-share/DATASET/TeleopData/YAM bash convert_data.sh
+```
 
 ### 1) 微调
 

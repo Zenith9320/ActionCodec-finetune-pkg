@@ -1,36 +1,29 @@
 #!/usr/bin/env bash
 # ============================================================================
-# YAM ActionCodec 微调脚本（G0.5 复现 · 百度智能云训练任务）
+# YAM ActionCodec 微调脚本（G0.5 复现）
 #
 # 作用：在预训练码本 checkpoints/action_tokenizer.pt 上，用 YAM 双臂数据
 #       微调 ActionCodec（自监督重建 + commitment loss）。
 #
-# 数据集：通过 PFS（并行文件系统）挂载。本脚本把挂载点软链到 configs 期望
-#         的路径 data/yam/TASK-YAM-0001_lerobot。
-#         用环境变量 YAM_DATA_ROOT 指定挂载点（默认 /mnt/pfs/yam_data），
-#         挂载点下需包含 LeRobot 数据集目录 TASK-YAM-0001_lerobot。
+# 数据集：本地 data/yam/TASK-YAM-XXXX_lerobot/，由 convert_data.sh 从原始
+#         MCAP 转换而来（本脚本只做存在性检查，不再做 PFS 软链）。
 #
 # 码本稳定性超参（ema_decay=0.99 / threshold_ema_dead=0 / quantizer_dropout=0）
 # 已固化在 configs/task/yam.yaml，无需在此传参。
 # ============================================================================
 set -euo pipefail
 
-# ── 路径与数据集挂载 ─────────────────────────────────────────────────────
+# ── 路径与数据集检查 ─────────────────────────────────────────────────────
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_ROOT"
 
-DATA_ROOT="${YAM_DATA_ROOT:-/mnt/pfs/yam_data}"
-
-mkdir -p data/yam
-if [ -d "$DATA_ROOT/TASK-YAM-0001_lerobot" ]; then
-  if [ ! -e "data/yam/TASK-YAM-0001_lerobot" ]; then
-    ln -s "$DATA_ROOT/TASK-YAM-0001_lerobot" "data/yam/TASK-YAM-0001_lerobot"
-    echo "[data] 已软链: $DATA_ROOT/TASK-YAM-0001_lerobot -> data/yam/TASK-YAM-0001_lerobot"
-  else
-    echo "[data] 已存在: data/yam/TASK-YAM-0001_lerobot（跳过软链）"
-  fi
+# 数据集已由 convert_data.sh 转换到 data/yam/TASK-YAM-XXXX_lerobot/，此处只做检查。
+DATASET_COUNT="$(find data/yam -maxdepth 1 -type d -name 'TASK-YAM-*_lerobot' 2>/dev/null | wc -l | tr -d ' ')"
+if [ "${DATASET_COUNT:-0}" -gt 0 ]; then
+  echo "[data] 发现 $DATASET_COUNT 个 _lerobot 数据集"
 else
-  echo "[data] ⚠ 未找到 $DATA_ROOT/TASK-YAM-0001_lerobot，请确认 PFS 挂载路径" >&2
+  echo "[data] ⚠ 未找到 data/yam/TASK-YAM-*_lerobot" >&2
+  echo "       请先转换原始 MCAP：RAW_DATA_ROOT=<原始数据路径> bash convert_data.sh" >&2
 fi
 
 # ── 环境 ─────────────────────────────────────────────────────────────────

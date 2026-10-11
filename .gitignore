@@ -4,8 +4,10 @@ checkpoints/
 *.pth
 *.safetensors
 
-# 运行时软链的数据集目录（PFS 挂载后由脚本自动生成）
+# 运行时数据目录（转换脚本生成 / 原始数据本地副本）
 data/yam/
+data/raw/
+preview_out/
 
 # —— Python ——
 __pycache__/
