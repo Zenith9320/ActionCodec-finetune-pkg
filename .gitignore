@@ -7,6 +7,7 @@ checkpoints/
 # 运行时数据目录（转换脚本生成 / 原始数据本地副本）
 data/yam/
 data/raw/
+data/stats/
 preview_out/
 
 # —— Python ——
