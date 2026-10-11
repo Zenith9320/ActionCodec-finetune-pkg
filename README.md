@@ -29,7 +29,8 @@ ActionCodec-finetune-pkg/
 ├── download_ckpt.sh              # 下载预训练码本 action_tokenizer.pt（约 484MB）
 ├── convert_data.sh               # 原始 MCAP → data/yam/*_lerobot（微调前先跑）
 ├── run_finetune.sh               # ★ 微调入口（含训练后评估）
-└── run_eval.sh                   # 评估入口（基线对照 / 微调后验收）
+├── run_eval.sh                   # 评估入口（基线对照 / 微调后验收）
+└── upload_output.sh              # 微调后上传产物到 HF（私有仓，防临时容器销毁）
 ```
 
 ---
@@ -113,6 +114,22 @@ bash run_finetune.sh
 bash run_eval.sh                                          # 预训练基线（微调前）
 bash run_eval.sh checkpoints/action_tokenizer_yam.pt      # 微调后
 ```
+
+### 4) 上传产物（收尾，防临时容器销毁）
+
+平台的本地盘任务结束即释放，微调产物必须赶在结束前传到持久化仓库：
+
+```bash
+export HF_REPO_ID=Zenith6666/yam-actioncodec   # 目标仓库（脚本已内置此默认值，可不设）
+export HF_TOKEN=hf_xxxx                          # 写权限 token（平台密钥注入，勿硬编码）
+bash upload_output.sh
+```
+
+默认上传 `action_tokenizer_yam.pt` + `yam_stats.json` 两个文件；仓库不存在会自动建私有仓。
+改文件清单用 `export UPLOAD_FILES="checkpoints/xxx data/yyy"`。
+
+> 注意：上传走官方 `https://huggingface.co`（`hf-mirror.com` 只读、不支持 push）。
+> 若平台直连官方源不通，需自行配代理或改用 BOS 上传。
 
 ---
 
