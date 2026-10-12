@@ -24,10 +24,17 @@ fi
 echo "[env] 升级 pip ..."
 "$PYTHON" -m pip install --upgrade pip -i "$PYPI_INDEX_URL"
 
-# torch 2.7.1 (cu128)
-echo "[env] 安装 torch==2.7.1 (cu128) ..."
-"$PYTHON" -m pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 \
-  --index-url "$PYTORCH_INDEX_URL"
+# torch：NGC 预设镜像通常已自带 torch + CUDA，直接复用。
+# 重装反而容易因镜像源不可达（aliyun pytorch-wheels 空 / pypi.ngc.nvidia.com DNS 解析失败）而整条失败。
+if "$PYTHON" -c 'import torch; assert torch.cuda.is_available()' >/dev/null 2>&1; then
+  TVER="$("$PYTHON" -c 'import torch; print(torch.__version__)')"
+  CUDA="$("$PYTHON" -c 'import torch; print(torch.version.cuda)')"
+  echo "[env] 复用镜像自带 torch=$TVER cuda=$CUDA，跳过重装"
+else
+  echo "[env] 安装 torch==2.7.1 (cu128) ..."
+  "$PYTHON" -m pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 \
+    --index-url "$PYTORCH_INDEX_URL"
+fi
 
 # 其余依赖
 echo "[env] 安装 requirements.txt ..."
