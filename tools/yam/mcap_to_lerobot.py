@@ -353,8 +353,12 @@ def import_lerobot_writer():
     try:
         from g05.data.lerobot.lerobot_dataset_v3 import LeRobotDataset as DS
         return DS, "vendored"
-    except ImportError:
-        pass
+    except ImportError as e:
+        print(
+            f"[lerobot] vendored 写入器导入失败，回退 pip lerobot；"
+            f"真实原因: {type(e).__name__}: {e}",
+            file=sys.stderr,
+        )
     from lerobot.datasets.lerobot_dataset import LeRobotDataset as DS
     return DS, "standalone"
 

@@ -44,8 +44,8 @@ ActionCodec-finetune-pkg/
 bash download_ckpt.sh    # 只下 action_tokenizer.pt 一个文件（约 484MB）
 ```
 
-来源是官方 `OpenGalaxea/G05` 仓库（`action_tokenizer.pt` 在根目录）。脚本默认走国内
-镜像 `hf-mirror.com`，海外环境用 `HF_ENDPOINT= bash download_ckpt.sh` 切回官方源。
+来源是官方 `OpenGalaxea/G05` 仓库（`action_tokenizer.pt` 在根目录）。脚本默认走官方
+`huggingface.co`；如需国内镜像可 `HF_ENDPOINT=https://hf-mirror.com bash download_ckpt.sh`。
 
 ---
 

@@ -9,6 +9,7 @@ pandas==2.2.3
 datasets==3.6.0
 huggingface-hub==0.35.0
 pyarrow
+jsonlines==4.0.0
 einops==0.8.0
 av==14.2.0
 mcap

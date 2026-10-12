@@ -5,7 +5,7 @@
 # 来源：Hugging Face OpenGalaxea/G05（Galaxea 官方 G0.5 模型仓库，根目录下）
 # 依赖：huggingface-hub（setup_env.sh 已装，需先跑 setup_env.sh）
 #
-# 默认走国内 HF 镜像 hf-mirror.com；海外环境可 `export HF_ENDPOINT=` 关闭镜像。
+# 默认走官方 huggingface.co（本算力平台已确认可直连）；如需国内镜像可 `export HF_ENDPOINT=https://hf-mirror.com`。
 # ============================================================================
 set -euo pipefail
 
@@ -14,7 +14,7 @@ cd "$PROJECT_ROOT"
 
 REPO="${REPO:-OpenGalaxea/G05}"
 CKPT_FILE="${CKPT_FILE:-action_tokenizer.pt}"
-export HF_ENDPOINT="${HF_ENDPOINT:-https://hf-mirror.com}"
+export HF_ENDPOINT="${HF_ENDPOINT:-}"
 
 mkdir -p checkpoints
 
@@ -24,7 +24,7 @@ if [ -f "checkpoints/$CKPT_FILE" ]; then
 fi
 
 echo "[ckpt] 下载 $REPO/$CKPT_FILE ..."
-huggingface-cli download "$REPO" "$CKPT_FILE" \
+hf download "$REPO" "$CKPT_FILE" \
   --repo-type model \
   --local-dir checkpoints
 

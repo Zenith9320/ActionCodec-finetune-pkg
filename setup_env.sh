@@ -3,15 +3,18 @@
 # 一键安装运行环境（torch cu128 + 精简依赖）
 # 用途：预设镜像 + git clone 的启动流程里，先跑本脚本，再跑 run_finetune.sh
 #
-# 镜像源可用环境变量覆盖（默认阿里云）：
-#   PYPI_INDEX_URL       PyPI 镜像
-#   PYTORCH_INDEX_URL    PyTorch cu128 轮子源
+# 镜像源可用环境变量覆盖（默认官方源）：
+#   PYPI_INDEX_URL       PyPI 官方源
+#   PYTORCH_INDEX_URL    PyTorch 官方 cu128 轮子源
 # ============================================================
 set -euo pipefail
 
+# 屏蔽镜像自带的 pip 配置（NGC 容器写入了 pypi.ngc.nvidia.com，DNS 解析失败会导致重试/超时）
+export PIP_CONFIG_FILE=/dev/null
+
 PYTHON="${PYTHON:-python}"
-PYPI_INDEX_URL="${PYPI_INDEX_URL:-https://mirrors.aliyun.com/pypi/simple/}"
-PYTORCH_INDEX_URL="${PYTORCH_INDEX_URL:-https://mirrors.aliyun.com/pytorch-wheels/cu128/}"
+PYPI_INDEX_URL="${PYPI_INDEX_URL:-https://pypi.org/simple}"
+PYTORCH_INDEX_URL="${PYTORCH_INDEX_URL:-https://download.pytorch.org/whl/cu128}"
 
 # Python 版本检查（项目要求 3.10）
 PYVER="$("$PYTHON" -c 'import sys; print(f"{sys.version_info[0]}.{sys.version_info[1]}")' 2>/dev/null || echo '?')"
@@ -25,7 +28,7 @@ echo "[env] 升级 pip ..."
 "$PYTHON" -m pip install --upgrade pip -i "$PYPI_INDEX_URL"
 
 # torch：NGC 预设镜像通常已自带 torch + CUDA，直接复用。
-# 重装反而容易因镜像源不可达（aliyun pytorch-wheels 空 / pypi.ngc.nvidia.com DNS 解析失败）而整条失败。
+# 复用镜像自带 torch 最稳；重装需从官方 cu128 轮子源拉取，镜像自带 pip 源已用 PIP_CONFIG_FILE 屏蔽。
 if "$PYTHON" -c 'import torch; assert torch.cuda.is_available()' >/dev/null 2>&1; then
   TVER="$("$PYTHON" -c 'import torch; print(torch.__version__)')"
   CUDA="$("$PYTHON" -c 'import torch; print(torch.version.cuda)')"
