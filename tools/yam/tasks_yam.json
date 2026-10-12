@@ -1,12 +1,12 @@
 {
-  "TASK-YAM-0001": "pick up the cup",
-  "TASK-YAM-0002": "TASK-YAM-0002",
-  "TASK-YAM-0004": "TASK-YAM-0004",
-  "TASK-YAM-0006": "TASK-YAM-0006",
-  "TASK-YAM-0007": "TASK-YAM-0007",
-  "TASK-YAM-0008": "TASK-YAM-0008",
-  "TASK-YAM-0010": "TASK-YAM-0010",
-  "TASK-YAM-0013": "TASK-YAM-0013",
-  "TASK-YAM-0014": "TASK-YAM-0014",
-  "TASK-YAM-0015": "TASK-YAM-0015"
+  "TASK-YAM-0001": "Hit the ball with claws to score a goal",
+  "TASK-YAM-0002": "Pick up the seal, dip it in the ink pad, and stamp.",
+  "TASK-YAM-0004": "Grab the ham sausage to the foam box",
+  "TASK-YAM-0006": "Pick up the small square and place it in the groove",
+  "TASK-YAM-0007": "One gripper holds the bottle, and the inner side of the other gripper rubs open the bottle cap.",
+  "TASK-YAM-0008": "One gripper clamps the bottle, and the other gripper rotates to open the cap.",
+  "TASK-YAM-0010": "One gripper holds the gum bottle, and the other gripper pops open the lid.",
+  "TASK-YAM-0013": "Sort the blocks from left to right according to their size.",
+  "TASK-YAM-0014": "Pick up the towel and wipe the whiteboard with it.",
+  "TASK-YAM-0015": "Put items in the drawer."
 }
