@@ -21,7 +21,7 @@ ActionCodec-finetune-pkg/
 ├── scripts/train_tokenizer.py    # 微调/评估脚本
 ├── tools/yam/                    # 原始 MCAP → LeRobot 转换
 │   ├── mcap_to_lerobot.py        # 转换脚本（流式写盘，防 OOM）
-│   └── tasks_yam.json            # task id → 指令 映射（下游 VLA 前需填真实指令）
+│   └── tasks_yam.json            # task id → 指令 映射（已填真实英文指令）
 ├── checkpoints/
 │   └── action_tokenizer.pt       # 预训练初始权重（507MB，--init-ckpt，git 不打包）
 ├── data/stats/yam_stats.json     # YAM 动作 z-score 统计量（缺失时自动重算）
@@ -65,8 +65,8 @@ RAW_DATA_ROOT=/mnt/workspace/handzero-share/DATASET/TeleopData/YAM bash convert_
 若想把原始数据先拷到本地再转，把 `RAW_DATA_ROOT` 指向本地目录即可。
 转换后会删除旧的 `data/stats/yam_stats.json`，微调启动时自动遍历全量数据重算统计量。
 
-> 说明：`tools/yam/tasks_yam.json` 里除 `TASK-YAM-0001` 外的指令是占位符（task id 本身）。
-> 码本微调（自监督重建）不看指令，占位即可；但后续 VLA 全模型微调前需换成真实自然语言指令。
+> 说明：`tools/yam/tasks_yam.json` 已填 10 个任务的真实英文指令；转换时写入每条 episode 的
+> parquet `task` 字段，VLA 全模型微调直接使用。
 
 ---
 

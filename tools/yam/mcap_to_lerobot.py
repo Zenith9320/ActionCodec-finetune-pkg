@@ -22,7 +22,7 @@ mcap_to_lerobot.py
   observation.images.head_rgb / left_wrist_rgb / right_wrist_rgb  (3,480,640)
   observation.state.left_arm(6) / right_arm(6) / left_gripper(1) / right_gripper(1)
   action.left_arm(6) / right_arm(6) / action.left_gripper(1) / right_gripper(1)
-  task = 指令字符串（内容待定，可先用占位符）
+  task = 指令字符串（来自 tasks_yam.json，真实英文指令）
 
 对齐方式（与官方 GalaxeaLeRobotToolkit 一致）：
   - 以 head(main) 相机帧时戳为基准栅格（实测 30Hz）
