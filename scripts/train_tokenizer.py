@@ -346,6 +346,13 @@ def eval_only(args):
     m = evaluate(wrapper, eval_loader, device, args.eval_batches)
     print(f"[eval-only] ckpt={args.ckpt}")
     print(json.dumps(m, indent=2, ensure_ascii=False))
+    if args.eval_out:
+        out = Path(args.eval_out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        payload = {"ckpt": args.ckpt, **m}
+        out.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                       encoding="utf-8")
+        print(f"[eval-only] saved -> {out}")
 
 
 # ---------------------------------------------------------------------------
@@ -373,6 +380,8 @@ def parse_args():
     p.add_argument("--workers", type=int, default=8)
     p.add_argument("--log-every", type=int, default=20)
     p.add_argument("--eval-batches", type=int, default=50, help="0=全量验证集")
+    p.add_argument("--eval-out", default=None,
+                   help="--eval-only 时把指标（含 ckpt 名）写进该 JSON 文件")
     p.add_argument("--max-steps", type=int, default=0, help="调试用，>0 限制步数")
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--log-file", default=None)

@@ -65,9 +65,12 @@ echo "[done] 微调完成 -> $OUT_CKPT"
 echo "================================================================"
 echo " 微调后评估"
 echo "================================================================"
+EVAL_OUT="${EVAL_OUT:-eval/eval_action_tokenizer_yam.json}"
 python scripts/train_tokenizer.py \
   --task yam \
   --eval-only \
   --ckpt "$OUT_CKPT" \
   --micro-batch "$MICRO_BATCH" \
-  --workers "$WORKERS"
+  --workers "$WORKERS" \
+  --eval-out "$EVAL_OUT"
+echo "[done] 评估结果 -> $EVAL_OUT"
