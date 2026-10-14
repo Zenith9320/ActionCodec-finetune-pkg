@@ -76,7 +76,8 @@ def load_task_config(task_name: str):
 # ---------------------------------------------------------------------------
 # 构建 dataset / processor / stats
 # ---------------------------------------------------------------------------
-def build_data(cfg, val_ratio: float, num_workers: int, batch_size: int):
+def build_data(cfg, val_ratio: float, num_workers: int, batch_size: int,
+               max_datasets: int = 0):
     from g05.utils.data.processor_utils import build_processors, instantiate_dataset
     from g05.utils.data.normalizer import (
         load_dataset_stats_from_json,
@@ -100,8 +101,11 @@ def build_data(cfg, val_ratio: float, num_workers: int, batch_size: int):
         if _key in pc:
             del pc[_key]
 
-    train_dataset = instantiate_dataset(cfg, is_training_set=True, load_images=False)
-    eval_dataset = instantiate_dataset(cfg, is_training_set=False, load_images=False)
+    # max_datasets>0 时只取前 N 个 dataset_dir（平台/本地常只下载部分任务，
+    # configs/data/yam.yaml 默认列了全部 10 个，全量引用会 FileNotFoundError）。
+    extra = {"n_datasets": max_datasets} if max_datasets and max_datasets > 0 else {}
+    train_dataset = instantiate_dataset(cfg, is_training_set=True, load_images=False, **extra)
+    eval_dataset = instantiate_dataset(cfg, is_training_set=False, load_images=False, **extra)
     processor = build_processors(cfg)
 
     stats_path = Path(cfg.datastatics_path) if cfg.get("datastatics_path", None) else None
@@ -266,7 +270,7 @@ def train(args):
     cfg = load_task_config(args.task)
     train_loader, eval_loader = build_data(
         cfg, val_ratio=args.val_ratio, num_workers=args.workers,
-        batch_size=args.micro_batch,
+        batch_size=args.micro_batch, max_datasets=args.max_datasets,
     )
     wrapper, reapply_eval = build_codec(cfg, args.init_ckpt, device, args.freeze_mode)
 
@@ -353,7 +357,7 @@ def eval_only(args):
     cfg = load_task_config(args.task)
     _train_loader, eval_loader = build_data(
         cfg, val_ratio=args.val_ratio, num_workers=args.workers,
-        batch_size=args.micro_batch,
+        batch_size=args.micro_batch, max_datasets=args.max_datasets,
     )
     wrapper, _ = build_codec(cfg, args.ckpt, device, freeze_mode="all_nn")
     m = evaluate(wrapper, eval_loader, device, args.eval_batches)
@@ -396,6 +400,8 @@ def parse_args():
     p.add_argument("--eval-out", default=None,
                    help="--eval-only 时把指标（含 ckpt 名）写进该 JSON 文件")
     p.add_argument("--max-steps", type=int, default=0, help="调试用，>0 限制步数")
+    p.add_argument("--max-datasets", type=int, default=0,
+                   help=">0 时只取前 N 个 dataset_dir（试跑/子集用；0=全部）")
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--log-file", default=None)
     return p.parse_args()

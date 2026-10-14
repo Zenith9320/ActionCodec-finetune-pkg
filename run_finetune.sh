@@ -19,6 +19,8 @@ cd "$PROJECT_ROOT"
 
 # 数据集已由 convert_data.sh 转换到 data/yam/TASK-YAM-XXXX_lerobot/，此处只做检查。
 DATASET_COUNT="$(find data/yam -maxdepth 1 -type d -name 'TASK-YAM-*_lerobot' 2>/dev/null | wc -l | tr -d ' ')"
+# 默认用全部已下载的任务；可用 MAX_DATASETS=N 只取前 N 个做快速试跑。
+MAX_DATASETS="${MAX_DATASETS:-$DATASET_COUNT}"
 if [ "${DATASET_COUNT:-0}" -gt 0 ]; then
   echo "[data] 发现 $DATASET_COUNT 个 _lerobot 数据集"
 else
@@ -57,6 +59,7 @@ python scripts/train_tokenizer.py \
   --grad-accum "$GRAD_ACCUM" \
   --lr "$LR" \
   --workers "$WORKERS" \
+  --max-datasets "$MAX_DATASETS" \
   --log-file finetune.jsonl
 
 echo "[done] 微调完成 -> $OUT_CKPT"
@@ -72,5 +75,6 @@ python scripts/train_tokenizer.py \
   --ckpt "$OUT_CKPT" \
   --micro-batch "$MICRO_BATCH" \
   --workers "$WORKERS" \
+  --max-datasets "$MAX_DATASETS" \
   --eval-out "$EVAL_OUT"
 echo "[done] 评估结果 -> $EVAL_OUT"
