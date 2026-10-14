@@ -27,12 +27,22 @@ fi
 echo "[env] 升级 pip ..."
 "$PYTHON" -m pip install --upgrade pip -i "$PYPI_INDEX_URL"
 
-# torch：NGC 预设镜像通常已自带 torch + CUDA，直接复用。
-# 复用镜像自带 torch 最稳；重装需从官方 cu128 轮子源拉取，镜像自带 pip 源已用 PIP_CONFIG_FILE 屏蔽。
-if "$PYTHON" -c 'import torch; assert torch.cuda.is_available()' >/dev/null 2>&1; then
+# torch：NGC 预设镜像通常已自带 torch + CUDA，但可能是只支持到 sm_90 的旧版；
+# 在 Blackwell（sm_100/sm_120）GPU 上 is_available() 仍返回 True，却无法执行 CUDA kernel。
+# 因此除 is_available() 外，还需确认每张 GPU 的算力都在 torch 的 arch 列表里，否则强制重装 cu128。
+if "$PYTHON" -c '
+import torch
+assert torch.cuda.is_available(), "no cuda"
+archs = torch.cuda.get_arch_list()
+for i in range(torch.cuda.device_count()):
+    cap = torch.cuda.get_device_capability(i)
+    sm = f"sm_{cap[0]}{cap[1]}"
+    compute = f"compute_{cap[0]}{cap[1]}"
+    assert sm in archs or compute in archs, f"unsupported arch {sm} on device {i}"
+' >/dev/null 2>&1; then
   TVER="$("$PYTHON" -c 'import torch; print(torch.__version__)')"
   CUDA="$("$PYTHON" -c 'import torch; print(torch.version.cuda)')"
-  echo "[env] 复用镜像自带 torch=$TVER cuda=$CUDA，跳过重装"
+  echo "[env] 复用镜像自带 torch=$TVER cuda=$CUDA（算力匹配），跳过重装"
 else
   echo "[env] 安装 torch==2.7.1 (cu128) ..."
   "$PYTHON" -m pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 \
