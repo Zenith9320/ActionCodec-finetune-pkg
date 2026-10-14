@@ -2,19 +2,19 @@
 # ============================================================================
 # 下载预训练 ActionCodec 码本 checkpoints/action_tokenizer.pt（约 484MB）
 #
-# 来源：Hugging Face OpenGalaxea/G05（Galaxea 官方 G0.5 模型仓库，根目录下）
-# 依赖：huggingface-hub（setup_env.sh 已装，需先跑 setup_env.sh）
-#
-# 默认走官方 huggingface.co（本算力平台已确认可直连）；如需国内镜像可 `export HF_ENDPOINT=https://hf-mirror.com`。
+# 来源：Zenith6666/G05-bucket（用户私有 bucket，公开只读）。直接从 bucket 的
+#       resolve 端点 HTTP 下载，绕开上游 OpenGalaxea/G05 的 gated 认证限制。
+# 实现：用 curl 直连，不依赖 huggingface_hub 的 bucket API（平台上是 0.35.0，
+#       不支持 bucket），也不需要 HF_TOKEN。
 # ============================================================================
 set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_ROOT"
 
-REPO="${REPO:-OpenGalaxea/G05}"
 CKPT_FILE="${CKPT_FILE:-action_tokenizer.pt}"
-export HF_ENDPOINT="${HF_ENDPOINT:-https://huggingface.co}"
+# bucket 公开，无需 token；完整下载 URL 可用 CKPT_URL 覆盖
+URL="${CKPT_URL:-https://huggingface.co/buckets/Zenith6666/G05-bucket/resolve/${CKPT_FILE}}"
 
 mkdir -p checkpoints
 
@@ -23,9 +23,7 @@ if [ -f "checkpoints/$CKPT_FILE" ]; then
   exit 0
 fi
 
-echo "[ckpt] 下载 $REPO/$CKPT_FILE ..."
-hf download "$REPO" "$CKPT_FILE" \
-  --repo-type model \
-  --local-dir checkpoints
+echo "[ckpt] 下载 $URL ..."
+curl -fL --retry 3 --retry-delay 2 -C - -o "checkpoints/$CKPT_FILE" "$URL"
 
-echo "[ckpt] 完成 -> checkpoints/$CKPT_FILE"
+echo "[ckpt] 完成 -> checkpoints/$CKPT_FILE（$(du -h "checkpoints/$CKPT_FILE" | cut -f1)）"
