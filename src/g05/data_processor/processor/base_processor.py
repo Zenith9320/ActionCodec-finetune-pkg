@@ -577,6 +577,9 @@ class ActionProcessor(BaseProcessor):
         dummy_clip_exception: Optional[Dict[str, Dict[str, Tuple[float, float]]]] = None,
         # tail norm scale (used when norm_mode is "z-score-tail" or "q01/q99-tail")
         norm_tail_scale: float = 0.075,
+        # embodiment type (injected by build_processors for mixture datasets;
+        # ActionProcessor ignores it — accepted only for config compat)
+        embodiment_type: Optional[str] = None,
     ):
         super().__init__(
             shape_meta=shape_meta,
@@ -602,6 +605,15 @@ class ActionProcessor(BaseProcessor):
 
         # Required by MixtureProcessor
         self.pad_token_id = pad_token_id
+        self._embodiment_type = embodiment_type
+
+    @property
+    def embodiment_type(self) -> Optional[str]:
+        return self._embodiment_type
+
+    @embodiment_type.setter
+    def embodiment_type(self, value: Optional[str]):
+        self._embodiment_type = value
 
     def preprocess_action_state(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
