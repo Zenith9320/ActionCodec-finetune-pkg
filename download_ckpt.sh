@@ -14,7 +14,7 @@ cd "$PROJECT_ROOT"
 
 REPO="${REPO:-OpenGalaxea/G05}"
 CKPT_FILE="${CKPT_FILE:-action_tokenizer.pt}"
-export HF_ENDPOINT="${HF_ENDPOINT:-}"
+export HF_ENDPOINT="${HF_ENDPOINT:-https://huggingface.co}"
 
 mkdir -p checkpoints
 

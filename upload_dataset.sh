@@ -22,7 +22,7 @@ HF_REPO_ID="${HF_REPO_ID:-Zenith6666/yam-lerobot}"
 HF_TOKEN="${HF_TOKEN:?请设置 HF_TOKEN（HF 写权限 token，勿硬编码）}"
 ONLY_TASK="${ONLY_TASK:-}"
 export HF_TOKEN
-export HF_ENDPOINT="${HF_ENDPOINT:-}"
+export HF_ENDPOINT="${HF_ENDPOINT:-https://huggingface.co}"
 
 echo "================================================================"
 echo " 上传 LeRobot 数据集到 HF"

@@ -24,7 +24,7 @@ HF_TOKEN="${HF_TOKEN:?请设置 HF_TOKEN（HF 读权限 token，勿硬编码）}
 OUTPUT_DIR="${OUTPUT_DIR:-data/yam}"
 ONLY_TASK="${ONLY_TASK:-}"
 export HF_TOKEN
-export HF_ENDPOINT="${HF_ENDPOINT:-}"
+export HF_ENDPOINT="${HF_ENDPOINT:-https://huggingface.co}"
 
 echo "================================================================"
 echo " 从 HF 下载 LeRobot 数据集"
