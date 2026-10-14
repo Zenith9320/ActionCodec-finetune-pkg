@@ -87,8 +87,21 @@ def build_data(cfg, val_ratio: float, num_workers: int, batch_size: int):
     OmegaConf.set_struct(cfg.data, False)
     cfg.data.val_set_proportion = float(val_ratio)
 
-    train_dataset = instantiate_dataset(cfg, is_training_set=True)
-    eval_dataset = instantiate_dataset(cfg, is_training_set=False)
+    # ActionCodec 码本微调只消费 27 维 action，不需要图像/VLM 输入。
+    # 但默认数据管线仍会逐样本解码 3 路 480x640 H.264 视频（head + 双腕），
+    # 这正是 GPU 利用率长期 ~0、只有零星 burst 的根因。此处两处都关掉：
+    #   1) 数据集 load_images=False —— 跳过 mp4 逐帧解码；
+    #   2) 处理器换成 ActionProcessor（只做 action/state 归一化，不碰图像）。
+    OmegaConf.set_struct(cfg.model.processor, False)
+    pc = cfg.model.processor
+    pc._target_ = "g05.data_processor.processor.base_processor.ActionProcessor"
+    for _key in ("discrete_action", "image_token_index", "tokenizer_params",
+                 "max_text_tokens", "num_input_cameras"):
+        if _key in pc:
+            del pc[_key]
+
+    train_dataset = instantiate_dataset(cfg, is_training_set=True, load_images=False)
+    eval_dataset = instantiate_dataset(cfg, is_training_set=False, load_images=False)
     processor = build_processors(cfg)
 
     stats_path = Path(cfg.datastatics_path) if cfg.get("datastatics_path", None) else None

@@ -955,7 +955,7 @@ class BaseLerobotDataset(torch.utils.data.Dataset):
                         else (action_is_pad | cur_action_is_pad)
                     )
 
-                if self.image_meta:
+                if self.image_meta and self.load_images:
                     for meta in self.image_meta:
                         sample["images"][meta["key"]] = self._get_image(meta, lerobot_sample)
                     sample["image_is_pad"] = lerobot_sample[
